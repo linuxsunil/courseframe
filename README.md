@@ -162,6 +162,6 @@ CourseFrame is built for the global L&D community. Contributions are welcome—w
 
 ## 📢 Share it
 
-If CourseFrame saves you time, share it with a fellow ID. That's the only ask.
+If CourseFrame saves you time, share it with a fellow ID. 
 
 [![Share on LinkedIn](https://img.shields.io/badge/Share%20on-LinkedIn-0077B5?style=flat&logo=linkedin)](https://www.linkedin.com/sharing/share-offsite/?url=https://linuxsunil.github.io/courseframe/)
