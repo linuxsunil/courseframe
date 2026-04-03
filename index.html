@@ -360,26 +360,39 @@ input,textarea,select{font-family:'DM Sans',sans-serif}
     </div>
 
     <div id="aiSetupSection" class="setup-section" style="margin-top:4px">
-      <span class="setup-label">AI provider</span>
+      <span class="setup-label">AI provider — pick a preset or configure any LLM</span>
       <div class="provider-grid">
         <div class="provider-btn active" id="prov-claude" onclick="selectProvider('claude')">
           <span class="provider-icon">◆</span>Claude
         </div>
         <div class="provider-btn" id="prov-gpt" onclick="selectProvider('gpt')">
-          <span class="provider-icon">◉</span>GPT-4o
+          <span class="provider-icon">◉</span>GPT / Copilot
         </div>
         <div class="provider-btn" id="prov-gemini" onclick="selectProvider('gemini')">
           <span class="provider-icon">✦</span>Gemini
         </div>
-        <div class="provider-btn" id="prov-copilot" onclick="selectProvider('copilot')">
-          <span class="provider-icon">⬡</span>Copilot
+        <div class="provider-btn" id="prov-openai-compat" onclick="selectProvider('openai-compat')">
+          <span class="provider-icon">⚙</span>Custom
         </div>
       </div>
+
+      <div style="margin-bottom:10px">
+        <div class="setup-label" style="margin-bottom:5px">Model name</div>
+        <input class="setup-input" id="modelInput" placeholder="e.g. claude-sonnet-4-20250514" />
+        <div class="api-hint" id="modelHint" style="margin-top:4px"></div>
+      </div>
+
+      <div style="margin-bottom:10px">
+        <div class="setup-label" style="margin-bottom:5px">API endpoint URL</div>
+        <input class="setup-input" id="endpointInput" placeholder="https://api.anthropic.com/v1/messages" />
+        <div class="api-hint">Override this to use any OpenAI-compatible endpoint — Ollama, LM Studio, Groq, Together AI, Mistral, OpenRouter, Azure, or any local model.</div>
+      </div>
+
       <div class="api-row">
-        <input class="api-input" id="apiKeyInput" type="password" placeholder="Paste your API key here" autocomplete="off" />
+        <input class="api-input" id="apiKeyInput" type="password" placeholder="Paste your API key here (leave blank for local models)" autocomplete="off" />
         <button class="api-toggle" onclick="toggleApiVis()">Show</button>
       </div>
-      <div class="api-hint" id="apiHint">Your API key stays in your browser only. It is never sent anywhere except directly to your chosen provider. <span id="apiHintLink"></span></div>
+      <div class="api-hint" id="apiHint" style="margin-top:6px">Your API key stays in your browser only — never sent anywhere except directly to the endpoint above.</div>
     </div>
 
     <button class="btn-primary" onclick="startBuild()" style="margin-top:8px">Start Building →</button>
@@ -433,7 +446,10 @@ let state = {
   audience: '',
   mode: 'ai',
   provider: 'claude',
+  providerType: 'claude',
   apiKey: '',
+  model: 'claude-sonnet-4-20250514',
+  endpoint: 'https://api.anthropic.com/v1/messages',
   accentColor: '#A47864',
   currentLesson: 0,
   lessons: []
@@ -441,11 +457,35 @@ let state = {
 
 const BLOCK_TYPES = ['text','callout','image','accordion','tabs','quiz','process','timeline','sorting','button','divider'];
 
-const PROVIDER_HINTS = {
-  claude: 'Get your key at console.anthropic.com',
-  gpt: 'Get your key at platform.openai.com',
-  gemini: 'Get your key at aistudio.google.com',
-  copilot: 'Get your key at azure.microsoft.com/products/ai-services/openai-service'
+const PROVIDER_PRESETS = {
+  claude: {
+    endpoint: 'https://api.anthropic.com/v1/messages',
+    model: 'claude-sonnet-4-20250514',
+    modelHint: 'Other models: claude-opus-4-5, claude-haiku-4-5-20251001',
+    keyHint: 'Get your key at console.anthropic.com',
+    type: 'claude'
+  },
+  gpt: {
+    endpoint: 'https://api.openai.com/v1/chat/completions',
+    model: 'gpt-4o',
+    modelHint: 'Other models: gpt-4o-mini, gpt-4-turbo, o1-mini',
+    keyHint: 'Get your key at platform.openai.com',
+    type: 'openai'
+  },
+  gemini: {
+    endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent',
+    model: 'gemini-2.0-flash',
+    modelHint: 'Other models: gemini-2.0-flash-lite, gemini-1.5-flash, gemini-1.5-pro',
+    keyHint: 'Get your key at aistudio.google.com',
+    type: 'gemini'
+  },
+  'openai-compat': {
+    endpoint: 'http://localhost:11434/v1/chat/completions',
+    model: 'llama3',
+    modelHint: 'Works with Ollama, LM Studio, Groq, Together AI, Mistral, OpenRouter, Azure OpenAI — any OpenAI-compatible endpoint',
+    keyHint: 'Leave blank for local models (Ollama, LM Studio). Add key for Groq, OpenRouter, Mistral etc.',
+    type: 'openai'
+  }
 };
 
 // ── COLOUR ──
@@ -487,9 +527,16 @@ function selectMode(m) {
 }
 function selectProvider(p) {
   state.provider = p;
+  const preset = PROVIDER_PRESETS[p];
   document.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('prov-' + p).classList.add('active');
-  document.getElementById('apiHint').innerHTML = 'Your API key stays in your browser only · ' + PROVIDER_HINTS[p];
+  document.getElementById('modelInput').value = preset.model;
+  document.getElementById('modelInput').placeholder = preset.model;
+  document.getElementById('modelHint').textContent = preset.modelHint;
+  const epInp = document.getElementById('endpointInput');
+  epInp.value = preset.endpoint;
+  epInp.placeholder = preset.endpoint;
+  document.getElementById('apiHint').textContent = preset.keyHint + ' · Key stays in your browser only, never logged.';
 }
 function toggleApiVis() {
   const inp = document.getElementById('apiKeyInput');
@@ -503,6 +550,9 @@ function startBuild() {
   state.courseTitle = document.getElementById('courseTitleInput').value || 'My Course';
   state.audience = document.getElementById('audienceInput').value;
   state.apiKey = document.getElementById('apiKeyInput').value;
+  state.model = document.getElementById('modelInput').value || PROVIDER_PRESETS[state.provider].model;
+  state.endpoint = document.getElementById('endpointInput').value || PROVIDER_PRESETS[state.provider].endpoint;
+  state.providerType = PROVIDER_PRESETS[state.provider].type;
   const n = parseInt(document.getElementById('lessonCount').value) || 3;
   if (state.lessons.length === 0) {
     for (let i = 0; i < n; i++) {
@@ -822,26 +872,50 @@ Use only the requested block types. Generate 4-8 blocks. Make content rich, prof
 
 async function callAI(prompt) {
   const key = state.apiKey;
-  const prov = state.provider;
-  let url, headers, body, parse;
-  if (prov === 'claude') {
-    url = 'https://api.anthropic.com/v1/messages';
+  const model = state.model || PROVIDER_PRESETS[state.provider].model;
+  const provType = state.providerType || PROVIDER_PRESETS[state.provider].type;
+  const preset = PROVIDER_PRESETS[state.provider];
+  let url = state.endpoint || preset.endpoint;
+  let headers, body, parse;
+
+  if (provType === 'claude') {
+    // Anthropic Messages API
     headers = {'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
-    body = JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]});
-    parse = r => r.content[0].text;
-  } else if (prov === 'gpt' || prov === 'copilot') {
-    url = prov === 'copilot' ? 'https://api.openai.com/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions';
-    headers = {'Content-Type':'application/json','Authorization':'Bearer '+key};
-    body = JSON.stringify({model:'gpt-4o',max_tokens:4000,messages:[{role:'user',content:prompt}]});
-    parse = r => r.choices[0].message.content;
-  } else if (prov === 'gemini') {
-    url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${key}`;
+    body = JSON.stringify({model, max_tokens:4000, messages:[{role:'user',content:prompt}]});
+    parse = r => {
+      if (r.content && r.content[0]) return r.content[0].text;
+      throw new Error('Unexpected Claude response shape: ' + JSON.stringify(r).slice(0,200));
+    };
+  } else if (provType === 'gemini') {
+    // Google Gemini — model name goes in the URL
+    url = url.replace('{MODEL}', model);
+    if (!url.includes('?')) url += '?key=' + key;
+    else url += '&key=' + key;
     headers = {'Content-Type':'application/json'};
-    body = JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:4000}});
-    parse = r => r.candidates[0].content.parts[0].text;
+    body = JSON.stringify({contents:[{parts:[{text:prompt}]}], generationConfig:{maxOutputTokens:4000}});
+    parse = r => {
+      if (r.candidates && r.candidates[0]) return r.candidates[0].content.parts[0].text;
+      if (r.error) throw new Error(r.error.message);
+      throw new Error('Unexpected Gemini response: ' + JSON.stringify(r).slice(0,200));
+    };
+  } else {
+    // OpenAI-compatible: GPT, Copilot, Groq, Together, Mistral, Ollama, LM Studio, OpenRouter, Azure etc.
+    headers = {'Content-Type':'application/json'};
+    if (key) headers['Authorization'] = 'Bearer ' + key;
+    body = JSON.stringify({model, max_tokens:4000, messages:[{role:'user',content:prompt}]});
+    parse = r => {
+      if (r.choices && r.choices[0]) return r.choices[0].message.content;
+      if (r.error) throw new Error(r.error.message);
+      throw new Error('Unexpected response: ' + JSON.stringify(r).slice(0,200));
+    };
   }
-  const res = await fetch(url, {method:'POST',headers,body});
-  if (!res.ok) { const err = await res.json().catch(()=>{}); throw new Error((err?.error?.message)||res.statusText); }
+
+  const res = await fetch(url, {method:'POST', headers, body});
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = err?.error?.message || err?.message || res.statusText;
+    throw new Error(msg);
+  }
   const data = await res.json();
   return parse(data);
 }
@@ -1278,6 +1352,19 @@ function showToast(msg) {
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'), 2800);
 }
+
+// ── AUTO-INIT provider fields on load ──
+(function initProvider(){
+  var preset = PROVIDER_PRESETS['claude'];
+  var mi = document.getElementById('modelInput');
+  var ei = document.getElementById('endpointInput');
+  var mh = document.getElementById('modelHint');
+  var ah = document.getElementById('apiHint');
+  if(mi){ mi.value = preset.model; mi.placeholder = preset.model; }
+  if(ei){ ei.value = preset.endpoint; ei.placeholder = preset.endpoint; }
+  if(mh) mh.textContent = preset.modelHint;
+  if(ah) ah.textContent = preset.keyHint + ' · Key stays in your browser only, never logged.';
+})();
 </script>
 </body>
 </html>
