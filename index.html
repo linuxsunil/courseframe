@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CourseFrame — Rise-Style Prototype Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --accent:#A47864;
+  --accent-dark:#7a5a4a;
+  --accent-light:#F5EFE9;
+  --accent-mid:#d4b5a4;
+  --topbar:#2C1F1A;
+  --topbar-text:#f0e8e3;
+  --bg:#faf8f6;
+  --bg2:#f0ebe6;
+  --bg3:#e8e0d8;
+  --card:#ffffff;
+  --border:#ddd5cc;
+  --border2:#c8bdb4;
+  --text:#1a1410;
+  --text2:#5a4a3f;
+  --text3:#9a8070;
+  --success:#2d7a4f;
+  --success-bg:#edf7f1;
+  --error:#c0392b;
+  --error-bg:#fdf0ee;
+  --warn:#8a6000;
+  --warn-bg:#fdf6e3;
+  --radius:10px;
+  --radius-lg:16px;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 16px rgba(0,0,0,0.06);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
+h1,h2,h3,h4{font-family:'Fraunces',serif;font-weight:400;line-height:1.2}
+button{font-family:'DM Sans',sans-serif;cursor:pointer}
+input,textarea,select{font-family:'DM Sans',sans-serif}
+
+/* ── APP SHELL ── */
+#app{display:flex;flex-direction:column;min-height:100vh}
+
+/* ── TOPBAR ── */
+.cf-topbar{background:var(--topbar);color:var(--topbar-text);display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:56px;flex-shrink:0;position:sticky;top:0;z-index:200}
+.cf-logo{font-family:'Fraunces',serif;font-size:22px;color:var(--accent-mid);letter-spacing:-0.02em;display:flex;align-items:center;gap:8px}
+.cf-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block}
+.cf-topbar-right{display:flex;align-items:center;gap:16px}
+.cf-topbar-tab{font-size:13px;color:rgba(240,232,227,0.55);cursor:pointer;padding:6px 14px;border-radius:6px;transition:all 0.15s;border:none;background:none}
+.cf-topbar-tab.active,.cf-topbar-tab:hover{color:var(--topbar-text);background:rgba(255,255,255,0.08)}
+
+/* ── SCREENS ── */
+.screen{display:none;flex:1}
+.screen.active{display:flex}
+
+/* ─── SCREEN 1: SETUP ─── */
+#screen-setup{flex-direction:column;align-items:center;justify-content:flex-start;padding:48px 24px 80px}
+.setup-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px 44px;width:100%;max-width:640px;box-shadow:var(--shadow)}
+.setup-hero{text-align:center;margin-bottom:36px}
+.setup-hero h1{font-size:36px;color:var(--accent-dark);margin-bottom:8px}
+.setup-hero p{color:var(--text2);font-size:15px;max-width:440px;margin:0 auto}
+.setup-section{margin-bottom:28px}
+.setup-label{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:8px;display:block}
+.setup-input{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--bg);transition:border-color 0.15s;outline:none}
+.setup-input:focus{border-color:var(--accent)}
+.setup-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mode-card{border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all 0.15s;position:relative}
+.mode-card:hover{border-color:var(--accent-mid)}
+.mode-card.selected{border-color:var(--accent);background:var(--accent-light)}
+.mode-card h4{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;margin-bottom:4px;color:var(--text)}
+.mode-card p{font-size:12px;color:var(--text3);line-height:1.5}
+.mode-check{position:absolute;top:12px;right:12px;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.mode-card.selected .mode-check{background:var(--accent);border-color:var(--accent);color:#fff;font-size:10px}
+
+/* provider picker */
+.provider-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.provider-btn{border:1.5px solid var(--border);border-radius:8px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.15s;background:var(--bg);font-size:12px;font-weight:500;color:var(--text2)}
+.provider-btn:hover{border-color:var(--accent-mid)}
+.provider-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent-dark)}
+.provider-icon{font-size:18px;display:block;margin-bottom:4px}
+.api-row{display:flex;gap:8px;align-items:center}
+.api-input{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:monospace;color:var(--text);background:var(--bg);outline:none;transition:border-color 0.15s}
+.api-input:focus{border-color:var(--accent)}
+.api-toggle{padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text3);font-size:13px;transition:all 0.15s}
+.api-toggle:hover{background:var(--bg2)}
+.api-hint{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5}
+
+.btn-primary{background:var(--accent);color:#fff;border:none;padding:13px 28px;border-radius:var(--radius);font-size:15px;font-weight:500;transition:all 0.15s;width:100%}
+.btn-primary:hover{background:var(--accent-dark);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-secondary{background:var(--bg2);color:var(--text);border:1px solid var(--border);padding:10px 20px;border-radius:var(--radius);font-size:14px;transition:all 0.15s}
+.btn-secondary:hover{background:var(--bg3)}
+.btn-sm{padding:7px 14px;font-size:13px;border-radius:8px}
+
+/* color customizer */
+.color-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.color-swatch{width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;transition:transform 0.15s;flex-shrink:0}
+.color-swatch:hover{transform:scale(1.1)}
+.color-swatch.active{border-color:var(--text);transform:scale(1.1)}
+.color-input-wrap{display:flex;align-items:center;gap:8px}
+.color-picker{width:36px;height:36px;border:1px solid var(--border);border-radius:6px;padding:2px;cursor:pointer;background:none}
+.color-hex-input{width:90px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:monospace;outline:none}
+.color-hex-input:focus{border-color:var(--accent)}
+
+/* ─── SCREEN 2: BUILD ─── */
+#screen-build{flex-direction:row}
+.build-sidebar{width:260px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.build-sidebar-top{padding:20px 16px;border-bottom:1px solid var(--border)}
+.build-sidebar-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:12px}
+.lesson-nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius);cursor:pointer;margin-bottom:4px;transition:all 0.15s;position:relative}
+.lesson-nav-item:hover{background:var(--bg2)}
+.lesson-nav-item.active{background:var(--accent-light);color:var(--accent-dark)}
+.lesson-nav-item.active .lesson-nav-num{background:var(--accent);color:#fff}
+.lesson-nav-num{width:22px;height:22px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;transition:all 0.15s}
+.lesson-nav-text{font-size:13px;flex:1;line-height:1.3}
+.lesson-nav-done{font-size:10px;color:var(--success)}
+.add-lesson-btn{margin:12px 16px;padding:9px;border:1.5px dashed var(--border2);border-radius:var(--radius);background:none;color:var(--text3);font-size:13px;width:calc(100% - 32px);transition:all 0.15s}
+.add-lesson-btn:hover{border-color:var(--accent);color:var(--accent-dark);background:var(--accent-light)}
+.build-sidebar-bottom{padding:16px;border-top:1px solid var(--border);margin-top:auto}
+
+.build-main{flex:1;overflow-y:auto;padding:32px 36px;max-width:820px}
+.build-lesson-header{margin-bottom:28px}
+.build-lesson-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:6px}
+.lesson-title-input{width:100%;font-family:'Fraunces',serif;font-size:26px;color:var(--text);border:none;background:transparent;outline:none;border-bottom:2px solid transparent;transition:border-color 0.15s;padding-bottom:4px}
+.lesson-title-input:focus{border-bottom-color:var(--accent)}
+.lesson-title-input::placeholder{color:var(--text3)}
+
+/* AI input panel */
+.ai-panel{background:var(--accent-light);border:1px solid var(--accent-mid);border-radius:var(--radius-lg);padding:20px;margin-bottom:24px}
+.ai-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ai-panel-title{font-size:14px;font-weight:500;color:var(--accent-dark);display:flex;align-items:center;gap:8px}
+.ai-badge{font-size:11px;background:var(--accent);color:#fff;padding:2px 8px;border-radius:20px}
+.ai-textarea{width:100%;padding:12px 14px;border:1px solid var(--accent-mid);border-radius:var(--radius);font-size:14px;color:var(--text);background:#fff;resize:vertical;min-height:100px;outline:none;line-height:1.6}
+.ai-textarea:focus{border-color:var(--accent)}
+.ai-textarea::placeholder{color:var(--text3)}
+.block-type-picker{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.btp-item{padding:5px 12px;border:1px solid var(--accent-mid);border-radius:20px;font-size:12px;cursor:pointer;background:#fff;color:var(--text2);transition:all 0.15s;user-select:none}
+.btp-item.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.ai-gen-btn{background:var(--accent);color:#fff;border:none;padding:10px 22px;border-radius:var(--radius);font-size:14px;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:8px}
+.ai-gen-btn:hover{background:var(--accent-dark)}
+.ai-gen-btn:disabled{opacity:0.5;cursor:not-allowed}
+.ai-gen-btn .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:none}
+.ai-gen-btn.loading .spinner{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* blocks */
+.blocks-area{display:flex;flex-direction:column;gap:16px}
+.block-wrap{position:relative;border:1px solid var(--border);border-radius:var(--radius-lg);background:var(--card);transition:border-color 0.15s;overflow:hidden}
+.block-wrap:hover{border-color:var(--border2)}
+.block-wrap.dragging{opacity:0.5;border-color:var(--accent)}
+.block-toolbar{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border);font-size:12px;color:var(--text3)}
+.block-type-badge{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;background:var(--bg3);padding:2px 8px;border-radius:4px;color:var(--text2)}
+.block-tools{margin-left:auto;display:flex;gap:4px}
+.block-tool-btn{width:26px;height:26px;border:none;background:transparent;border-radius:5px;color:var(--text3);font-size:13px;transition:all 0.12s;display:flex;align-items:center;justify-content:center}
+.block-tool-btn:hover{background:var(--bg3);color:var(--text)}
+.drag-handle{cursor:grab;font-size:14px;margin-right:6px}
+.block-body{padding:18px 20px}
+
+/* block: add */
+.add-block-row{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.add-block-btn{padding:7px 14px;border:1.5px dashed var(--border2);border-radius:8px;background:none;color:var(--text3);font-size:13px;cursor:pointer;transition:all 0.15s}
+.add-block-btn:hover{border-color:var(--accent);color:var(--accent-dark);background:var(--accent-light)}
+
+/* ─── SCREEN 3: PREVIEW ─── */
+#screen-preview{flex-direction:column}
+.preview-toolbar{background:var(--card);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:12px}
+.preview-toolbar-title{font-size:14px;font-weight:500;color:var(--text2);flex:1}
+.preview-device-btns{display:flex;gap:4px;margin-right:8px}
+.dev-btn{padding:6px 12px;border:1px solid var(--border);border-radius:7px;background:none;font-size:12px;color:var(--text3);cursor:pointer;transition:all 0.15s}
+.dev-btn.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent-dark)}
+.export-btn{background:var(--accent);color:#fff;border:none;padding:9px 22px;border-radius:var(--radius);font-size:14px;font-weight:500;transition:all 0.15s;display:flex;align-items:center;gap:8px}
+.export-btn:hover{background:var(--accent-dark)}
+.preview-frame-wrap{flex:1;overflow:auto;display:flex;justify-content:center;padding:24px;background:var(--bg2)}
+.preview-frame{background:#fff;border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow),0 8px 32px rgba(0,0,0,0.08);transition:width 0.3s;width:100%;max-width:1100px}
+
+/* ─── RISE PREVIEW STYLES ─── */
+.rise-wrap{font-family:'DM Sans',sans-serif;min-height:500px;display:flex;flex-direction:column;background:#faf8f6}
+.rise-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;color:#fff;flex-shrink:0;position:relative}
+.rise-course-name{font-size:13px;opacity:0.75;border-left:1px solid rgba(255,255,255,0.2);padding-left:12px;margin-left:8px}
+.rise-prog-wrap{display:flex;align-items:center;gap:10px}
+.rise-prog-bar{width:110px;height:3px;background:rgba(255,255,255,0.2);border-radius:2px;overflow:hidden}
+.rise-prog-fill{height:100%;border-radius:2px;transition:width 0.4s}
+.rise-prog-label{font-size:11px;opacity:0.6}
+.rise-body{display:flex;flex:1}
+.rise-nav{width:230px;border-right:1px solid rgba(0,0,0,0.08);overflow-y:auto;flex-shrink:0;background:#fff}
+.rise-nav-section{padding:16px 0}
+.rise-nav-label{font-size:10px;font-weight:500;letter-spacing:0.08em;color:#9a8070;padding:0 14px 8px;text-transform:uppercase}
+.rise-nav-item{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;border-left:3px solid transparent;transition:all 0.15s;font-size:13px;color:#5a4a3f}
+.rise-nav-item:hover{background:#f5efe9}
+.rise-nav-item.active{border-left-color:var(--accent);background:#fdf8f5;color:var(--accent-dark);font-weight:500}
+.rise-nav-dot{width:7px;height:7px;border-radius:50%;background:#ddd5cc;flex-shrink:0;transition:background 0.2s}
+.rise-nav-item.done .rise-nav-dot{background:#2d7a4f}
+.rise-content{flex:1;padding:36px 40px;overflow-y:auto;max-width:760px}
+.rise-lesson-tag{display:inline-block;font-size:11px;font-weight:500;padding:3px 12px;border-radius:20px;margin-bottom:10px;color:#fff}
+.rise-lesson-title{font-family:'Fraunces',serif;font-size:30px;margin-bottom:6px;color:#1a1410;font-weight:400}
+.rise-lesson-meta{font-size:13px;color:#9a8070;margin-bottom:32px}
+.rise-block{margin-bottom:22px}
+
+/* rise block types */
+.r-text{font-size:15px;color:#3a2a20;line-height:1.78}
+.r-callout{display:flex;gap:14px;padding:16px 18px;border-radius:10px;border-left:3px solid}
+.r-callout-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.r-callout-text{font-size:14px;line-height:1.65}
+.r-image{border-radius:10px;display:flex;align-items:center;justify-content:center;min-height:180px;font-size:13px;font-weight:500;border:1.5px dashed}
+.r-accordion{border:1px solid #ddd5cc;border-radius:10px;overflow:hidden}
+.r-acc-item{border-bottom:1px solid #ddd5cc}
+.r-acc-item:last-child{border-bottom:none}
+.r-acc-trigger{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;cursor:pointer;background:#fff;font-size:14px;font-weight:500;color:#1a1410;transition:background 0.12s}
+.r-acc-trigger:hover{background:#faf8f6}
+.r-acc-arrow{font-size:11px;color:#9a8070;transition:transform 0.2s}
+.r-acc-trigger.open .r-acc-arrow{transform:rotate(180deg)}
+.r-acc-body{display:none;padding:13px 17px;font-size:14px;color:#5a4a3f;line-height:1.7;background:#faf8f6}
+.r-acc-body.open{display:block}
+.r-tabs-heads{display:flex;border-bottom:1px solid #ddd5cc}
+.r-tab-head{padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;color:#9a8070;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s}
+.r-tab-head.active{color:var(--accent-dark);border-bottom-color:var(--accent)}
+.r-tab-pane{display:none;padding:16px;background:#faf8f6;border-radius:0 0 10px 10px;border:1px solid #ddd5cc;border-top:none;font-size:14px;color:#5a4a3f;line-height:1.7}
+.r-tab-pane.active{display:block}
+.r-quiz{background:#fff;border:1px solid #ddd5cc;border-radius:10px;padding:20px}
+.r-quiz-q{font-size:15px;font-weight:500;color:#1a1410;margin-bottom:16px}
+.r-quiz-opts{display:flex;flex-direction:column;gap:10px}
+.r-quiz-opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;border:1px solid #ddd5cc;cursor:pointer;font-size:14px;color:#5a4a3f;transition:all 0.15s;background:#faf8f6}
+.r-quiz-opt:hover{border-color:var(--accent-mid)}
+.r-quiz-opt.sel{border-color:var(--accent);background:#fdf8f5;color:var(--accent-dark);font-weight:500}
+.r-quiz-opt.correct{border-color:#2d7a4f;background:#edf7f1;color:#1a5c36}
+.r-quiz-opt.wrong{border-color:#c0392b;background:#fdf0ee;color:#9b2218}
+.r-quiz-radio{width:16px;height:16px;border-radius:50%;border:1.5px solid #c8bdb4;flex-shrink:0;transition:all 0.15s}
+.r-quiz-opt.sel .r-quiz-radio{background:var(--accent);border-color:var(--accent)}
+.r-quiz-opt.correct .r-quiz-radio{background:#2d7a4f;border-color:#2d7a4f}
+.r-quiz-opt.wrong .r-quiz-radio{background:#c0392b;border-color:#c0392b}
+.r-quiz-submit{margin-top:14px;padding:9px 22px;border-radius:8px;border:none;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;color:#fff}
+.r-quiz-submit:disabled{opacity:0.4;cursor:not-allowed}
+.r-quiz-fb{margin-top:12px;padding:12px 14px;border-radius:8px;font-size:13px;display:none}
+.r-quiz-fb.show-correct{display:block;background:#edf7f1;color:#1a5c36;border:1px solid #bbf7d0}
+.r-quiz-fb.show-wrong{display:block;background:#fdf0ee;color:#9b2218;border:1px solid #fecaca}
+.r-process{display:flex;flex-direction:column;gap:0}
+.r-process-step{display:flex;gap:16px;position:relative}
+.r-process-step:not(:last-child)::after{content:'';position:absolute;left:19px;top:42px;width:2px;bottom:-16px;background:#ddd5cc}
+.r-process-num{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;color:#fff;flex-shrink:0;z-index:1}
+.r-process-content{padding-bottom:24px;flex:1}
+.r-process-title{font-size:14px;font-weight:500;color:#1a1410;margin-bottom:4px}
+.r-process-desc{font-size:13px;color:#5a4a3f;line-height:1.65}
+.r-timeline{position:relative;padding-left:28px}
+.r-timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:#ddd5cc}
+.r-timeline-item{position:relative;margin-bottom:24px}
+.r-timeline-item::before{content:'';position:absolute;left:-24px;top:6px;width:12px;height:12px;border-radius:50%;border:2px solid #fff;z-index:1}
+.r-timeline-date{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+.r-timeline-title{font-size:14px;font-weight:500;color:#1a1410;margin-bottom:3px}
+.r-timeline-desc{font-size:13px;color:#5a4a3f;line-height:1.6}
+.r-sort-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.r-sort-col{border:1px solid #ddd5cc;border-radius:10px;overflow:hidden}
+.r-sort-col-head{padding:10px 14px;font-size:13px;font-weight:500;color:#fff}
+.r-sort-items{padding:10px;min-height:80px;display:flex;flex-direction:column;gap:6px}
+.r-sort-item{padding:8px 12px;background:#fff;border:1px solid #ddd5cc;border-radius:7px;font-size:13px;color:#3a2a20;cursor:grab;transition:all 0.15s}
+.r-sort-item:hover{border-color:var(--accent-mid);background:#fdf8f5}
+.r-btn-block{display:flex;gap:10px;flex-wrap:wrap}
+.r-btn{padding:11px 28px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all 0.15s;color:#fff}
+.r-divider{border:none;border-top:1px solid #ddd5cc;margin:8px 0}
+.r-block-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:#9a8070;margin-bottom:8px}
+.rise-nav-footer{display:flex;align-items:center;justify-content:space-between;padding:20px 0 0;border-top:1px solid #ddd5cc;margin-top:12px}
+.rise-nav-btn{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #ddd5cc;background:#fff;color:#1a1410;transition:all 0.15s}
+.rise-nav-btn:hover{background:#faf8f6}
+.rise-nav-btn.next{color:#fff;border:none}
+.rise-nav-btn:disabled{opacity:0.35;cursor:not-allowed}
+
+/* edit overlay */
+.edit-note{text-align:center;font-size:12px;color:var(--text3);padding:8px;background:var(--warn-bg);border-bottom:1px solid #e8d88a}
+[contenteditable]:focus{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+/* toast */
+.toast{position:fixed;bottom:28px;right:28px;background:#1a1410;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;z-index:9999;opacity:0;transform:translateY(10px);transition:all 0.25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* status */
+.status-bar{padding:12px 20px;border-radius:var(--radius);font-size:13px;margin-bottom:16px;display:none}
+.status-bar.error{background:var(--error-bg);color:var(--error);border:1px solid #f5c6c2;display:block}
+.status-bar.success{background:var(--success-bg);color:var(--success);border:1px solid #b7e4c7;display:block}
+.status-bar.loading{background:var(--warn-bg);color:var(--warn);border:1px solid #fce08a;display:block}
+
+/* responsive */
+@media(max-width:700px){
+  .setup-row,.mode-cards,.provider-grid{grid-template-columns:1fr 1fr}
+  .provider-grid{grid-template-columns:repeat(2,1fr)}
+  .build-sidebar{width:200px}
+  .rise-nav{width:180px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TOPBAR -->
+<div class="cf-topbar">
+  <div class="cf-logo"><span class="cf-logo-dot"></span>CourseFrame</div>
+  <div class="cf-topbar-right">
+    <button class="cf-topbar-tab active" onclick="showScreen('setup')">Setup</button>
+    <button class="cf-topbar-tab" onclick="showScreen('build')">Build</button>
+    <button class="cf-topbar-tab" onclick="showScreen('preview')">Preview</button>
+  </div>
+</div>
+
+<!-- SCREEN 1: SETUP -->
+<div class="screen active" id="screen-setup">
+  <div style="width:100%;display:flex;flex-direction:column;align-items:center;padding:48px 24px 80px">
+  <div class="setup-card">
+    <div class="setup-hero">
+      <h1>CourseFrame</h1>
+      <p>Build Rise-style course prototypes in minutes. Share with stakeholders before you open your authoring tool.</p>
+    </div>
+
+    <div class="setup-section">
+      <span class="setup-label">Course title</span>
+      <input class="setup-input" id="courseTitleInput" placeholder="e.g. Workplace Safety Induction" />
+    </div>
+    <div class="setup-row">
+      <div class="setup-section" style="margin-bottom:0">
+        <span class="setup-label">Number of lessons</span>
+        <input class="setup-input" id="lessonCount" type="number" min="1" max="20" value="3" />
+      </div>
+      <div class="setup-section" style="margin-bottom:0">
+        <span class="setup-label">Target audience</span>
+        <input class="setup-input" id="audienceInput" placeholder="e.g. New employees" />
+      </div>
+    </div>
+
+    <div class="setup-section" style="margin-top:24px">
+      <span class="setup-label">Brand accent colour</span>
+      <div class="color-row">
+        <div class="color-swatch active" style="background:#A47864" data-color="#A47864" onclick="setAccent('#A47864',this)" title="Mocha Mousse (Pantone 2025)"></div>
+        <div class="color-swatch" style="background:#3B82F6" data-color="#3B82F6" onclick="setAccent('#3B82F6',this)"></div>
+        <div class="color-swatch" style="background:#10B981" data-color="#10B981" onclick="setAccent('#10B981',this)"></div>
+        <div class="color-swatch" style="background:#8B5CF6" data-color="#8B5CF6" onclick="setAccent('#8B5CF6',this)"></div>
+        <div class="color-swatch" style="background:#EF4444" data-color="#EF4444" onclick="setAccent('#EF4444',this)"></div>
+        <div class="color-swatch" style="background:#F59E0B" data-color="#F59E0B" onclick="setAccent('#F59E0B',this)"></div>
+        <div class="color-swatch" style="background:#EC4899" data-color="#EC4899" onclick="setAccent('#EC4899',this)"></div>
+        <div class="color-swatch" style="background:#0F766E" data-color="#0F766E" onclick="setAccent('#0F766E',this)"></div>
+        <div class="color-input-wrap">
+          <input type="color" class="color-picker" id="customColorPicker" value="#A47864" onchange="setAccent(this.value,null,true)" title="Custom colour">
+          <input type="text" class="color-hex-input" id="hexInput" value="#A47864" placeholder="#hex" onchange="setAccentHex(this.value)" />
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">Default: Mocha Mousse · Pantone Colour of the Year 2025 · Pick any colour to match your client's brand</div>
+    </div>
+
+    <div class="setup-section" style="margin-top:24px">
+      <span class="setup-label">Generation mode</span>
+      <div class="mode-cards">
+        <div class="mode-card selected" id="modeAI" onclick="selectMode('ai')">
+          <div class="mode-check">✓</div>
+          <h4>AI Mode</h4>
+          <p>Paste your raw content. AI writes and structures all blocks.</p>
+        </div>
+        <div class="mode-card" id="modeManual" onclick="selectMode('manual')">
+          <div class="mode-check"></div>
+          <h4>Manual Mode</h4>
+          <p>Build block by block. No API key needed.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="aiSetupSection" class="setup-section" style="margin-top:4px">
+      <span class="setup-label">AI provider</span>
+      <div class="provider-grid">
+        <div class="provider-btn active" id="prov-claude" onclick="selectProvider('claude')">
+          <span class="provider-icon">◆</span>Claude
+        </div>
+        <div class="provider-btn" id="prov-gpt" onclick="selectProvider('gpt')">
+          <span class="provider-icon">◉</span>GPT-4o
+        </div>
+        <div class="provider-btn" id="prov-gemini" onclick="selectProvider('gemini')">
+          <span class="provider-icon">✦</span>Gemini
+        </div>
+        <div class="provider-btn" id="prov-copilot" onclick="selectProvider('copilot')">
+          <span class="provider-icon">⬡</span>Copilot
+        </div>
+      </div>
+      <div class="api-row">
+        <input class="api-input" id="apiKeyInput" type="password" placeholder="Paste your API key here" autocomplete="off" />
+        <button class="api-toggle" onclick="toggleApiVis()">Show</button>
+      </div>
+      <div class="api-hint" id="apiHint">Your API key stays in your browser only. It is never sent anywhere except directly to your chosen provider. <span id="apiHintLink"></span></div>
+    </div>
+
+    <button class="btn-primary" onclick="startBuild()" style="margin-top:8px">Start Building →</button>
+  </div>
+  </div>
+</div>
+
+<!-- SCREEN 2: BUILD -->
+<div class="screen" id="screen-build">
+  <div class="build-sidebar">
+    <div class="build-sidebar-top">
+      <div class="build-sidebar-title">Lessons</div>
+      <div id="lessonNavList"></div>
+    </div>
+    <button class="add-lesson-btn" onclick="addLesson()">+ Add lesson</button>
+    <div class="build-sidebar-bottom">
+      <button class="btn-secondary btn-sm" style="width:100%;margin-bottom:8px" onclick="showScreen('preview')">Preview →</button>
+      <div style="font-size:11px;color:var(--text3);text-align:center;line-height:1.5">All changes auto-saved in this session</div>
+    </div>
+  </div>
+  <div class="build-main" id="buildMain">
+  </div>
+</div>
+
+<!-- SCREEN 3: PREVIEW -->
+<div class="screen" id="screen-preview">
+  <div class="preview-toolbar">
+    <span class="preview-toolbar-title">Preview — <span id="previewCourseTitle"></span></span>
+    <div class="preview-device-btns">
+      <button class="dev-btn active" onclick="setDevice('desktop',this)">Desktop</button>
+      <button class="dev-btn" onclick="setDevice('tablet',this)">Tablet</button>
+      <button class="dev-btn" onclick="setDevice('mobile',this)">Mobile</button>
+    </div>
+    <button class="export-btn" onclick="exportHTML()">⬇ Download HTML</button>
+    <button class="btn-secondary btn-sm" onclick="showScreen('build')">← Edit</button>
+  </div>
+  <div class="preview-frame-wrap">
+    <div class="preview-frame" id="previewFrame">
+      <div id="risePreview"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let state = {
+  courseTitle: 'My Course',
+  audience: '',
+  mode: 'ai',
+  provider: 'claude',
+  apiKey: '',
+  accentColor: '#A47864',
+  currentLesson: 0,
+  lessons: []
+};
+
+const BLOCK_TYPES = ['text','callout','image','accordion','tabs','quiz','process','timeline','sorting','button','divider'];
+
+const PROVIDER_HINTS = {
+  claude: 'Get your key at console.anthropic.com',
+  gpt: 'Get your key at platform.openai.com',
+  gemini: 'Get your key at aistudio.google.com',
+  copilot: 'Get your key at azure.microsoft.com/products/ai-services/openai-service'
+};
+
+// ── COLOUR ──
+function setAccent(hex, el, fromPicker) {
+  state.accentColor = hex;
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('hexInput').value = hex;
+  if (!fromPicker) document.getElementById('customColorPicker').value = hex;
+  applyAccent(hex);
+}
+function setAccentHex(val) {
+  if (/^#[0-9a-fA-F]{6}$/.test(val)) setAccent(val, null, false);
+}
+function applyAccent(hex) {
+  const r = document.documentElement;
+  r.style.setProperty('--accent', hex);
+  r.style.setProperty('--accent-dark', shadeColor(hex, -20));
+  r.style.setProperty('--accent-mid', shadeColor(hex, 30));
+  r.style.setProperty('--accent-light', shadeColor(hex, 75));
+}
+function shadeColor(hex, pct) {
+  let c = parseInt(hex.slice(1), 16);
+  let r = (c >> 16) & 0xff, g = (c >> 8) & 0xff, b = c & 0xff;
+  r = Math.min(255, Math.max(0, r + Math.round(r * pct / 100)));
+  g = Math.min(255, Math.max(0, g + Math.round(g * pct / 100)));
+  b = Math.min(255, Math.max(0, b + Math.round(b * pct / 100)));
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+// ── MODE / PROVIDER ──
+function selectMode(m) {
+  state.mode = m;
+  document.getElementById('modeAI').classList.toggle('selected', m === 'ai');
+  document.getElementById('modeManual').classList.toggle('selected', m === 'manual');
+  document.getElementById('modeAI').querySelector('.mode-check').textContent = m === 'ai' ? '✓' : '';
+  document.getElementById('modeManual').querySelector('.mode-check').textContent = m === 'manual' ? '✓' : '';
+  document.getElementById('aiSetupSection').style.display = m === 'ai' ? '' : 'none';
+}
+function selectProvider(p) {
+  state.provider = p;
+  document.querySelectorAll('.provider-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('prov-' + p).classList.add('active');
+  document.getElementById('apiHint').innerHTML = 'Your API key stays in your browser only · ' + PROVIDER_HINTS[p];
+}
+function toggleApiVis() {
+  const inp = document.getElementById('apiKeyInput');
+  const btn = inp.nextElementSibling;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+}
+
+// ── SETUP → BUILD ──
+function startBuild() {
+  state.courseTitle = document.getElementById('courseTitleInput').value || 'My Course';
+  state.audience = document.getElementById('audienceInput').value;
+  state.apiKey = document.getElementById('apiKeyInput').value;
+  const n = parseInt(document.getElementById('lessonCount').value) || 3;
+  if (state.lessons.length === 0) {
+    for (let i = 0; i < n; i++) {
+      state.lessons.push({ title: 'Lesson ' + (i + 1), blocks: [], rawContent: '', selectedBlockTypes: [...BLOCK_TYPES] });
+    }
+  }
+  renderBuild();
+  showScreen('build');
+}
+
+function showScreen(s) {
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  document.getElementById('screen-' + s).classList.add('active');
+  document.querySelectorAll('.cf-topbar-tab').forEach((t, i) => {
+    t.classList.toggle('active', ['setup','build','preview'][i] === s);
+  });
+  if (s === 'preview') renderPreview();
+}
+
+// ── LESSON NAV ──
+function renderLessonNav() {
+  const list = document.getElementById('lessonNavList');
+  list.innerHTML = state.lessons.map((l, i) => `
+    <div class="lesson-nav-item ${i === state.currentLesson ? 'active' : ''} ${l.blocks.length > 0 ? 'done' : ''}" onclick="switchLesson(${i})">
+      <div class="lesson-nav-num">${i + 1}</div>
+      <div class="lesson-nav-text">${l.title || 'Lesson ' + (i + 1)}</div>
+      ${l.blocks.length > 0 ? '<div class="lesson-nav-done">✓</div>' : ''}
+    </div>`).join('');
+}
+function switchLesson(i) {
+  state.currentLesson = i;
+  renderBuild();
+}
+function addLesson() {
+  state.lessons.push({ title: 'Lesson ' + (state.lessons.length + 1), blocks: [], rawContent: '', selectedBlockTypes: [...BLOCK_TYPES] });
+  state.currentLesson = state.lessons.length - 1;
+  renderBuild();
+}
+
+// ── BUILD SCREEN ──
+function renderBuild() {
+  renderLessonNav();
+  const lesson = state.lessons[state.currentLesson];
+  const isAI = state.mode === 'ai';
+  const main = document.getElementById('buildMain');
+
+  const blockTypePills = BLOCK_TYPES.map(bt => `
+    <div class="btp-item ${lesson.selectedBlockTypes.includes(bt) ? 'on' : ''}" onclick="toggleBlockType('${bt}',this)">${bt}</div>`).join('');
+
+  const aiPanel = isAI ? `
+    <div class="ai-panel">
+      <div class="ai-panel-header">
+        <div class="ai-panel-title"><span class="ai-badge">AI</span> Paste your raw content for this lesson</div>
+      </div>
+      <textarea class="ai-textarea" id="rawContent" placeholder="Paste SME notes, transcript snippets, bullet points, anything — AI will structure it into the block types you select below.">${lesson.rawContent || ''}</textarea>
+      <div style="font-size:12px;color:var(--text3);margin:10px 0 6px">Block types to generate:</div>
+      <div class="block-type-picker">${blockTypePills}</div>
+      <div id="genStatus" class="status-bar"></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px">
+        <button class="ai-gen-btn" id="genBtn" onclick="generateLesson()">
+          <span class="spinner" id="genSpinner"></span>
+          Generate lesson blocks
+        </button>
+        <span style="font-size:12px;color:var(--text3)">or build manually below ↓</span>
+      </div>
+    </div>` : '';
+
+  const blocksHtml = lesson.blocks.map((b, bi) => renderBlockEditor(b, bi)).join('');
+
+  const addButtons = BLOCK_TYPES.map(bt =>
+    `<button class="add-block-btn" onclick="addBlock('${bt}')">${bt}</button>`).join('');
+
+  main.innerHTML = `
+    <div class="build-lesson-header">
+      <div class="build-lesson-label">Lesson ${state.currentLesson + 1}</div>
+      <input class="lesson-title-input" value="${lesson.title}" placeholder="Lesson title" oninput="lesson_title_change(this.value)" />
+    </div>
+    ${aiPanel}
+    <div class="blocks-area" id="blocksArea">${blocksHtml}</div>
+    <div style="margin-top:20px">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em">Add a block manually</div>
+      <div class="add-block-row">${addButtons}</div>
+    </div>`;
+}
+
+function lesson_title_change(v) {
+  state.lessons[state.currentLesson].title = v;
+  renderLessonNav();
+}
+
+function toggleBlockType(bt, el) {
+  const lesson = state.lessons[state.currentLesson];
+  const idx = lesson.selectedBlockTypes.indexOf(bt);
+  if (idx > -1) lesson.selectedBlockTypes.splice(idx, 1);
+  else lesson.selectedBlockTypes.push(bt);
+  el.classList.toggle('on');
+}
+
+// ── BLOCK EDITOR ──
+function renderBlockEditor(block, bi) {
+  let inner = '';
+  const b = block;
+  if (b.type === 'text') {
+    inner = `<textarea style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;line-height:1.7;resize:vertical;min-height:80px;outline:none;color:var(--text);background:var(--bg)" onchange="updateBlock(${bi},'content',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">${b.content || ''}</textarea>`;
+  } else if (b.type === 'callout') {
+    inner = `
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start">
+        <div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Style</div>
+          <select style="padding:7px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;background:var(--bg)" onchange="updateBlock(${bi},'style',this.value)">
+            <option value="info" ${b.style==='info'?'selected':''}>Info</option>
+            <option value="warning" ${b.style==='warning'?'selected':''}>Warning</option>
+            <option value="success" ${b.style==='success'?'selected':''}>Success</option>
+            <option value="tip" ${b.style==='tip'?'selected':''}>Tip</option>
+          </select>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Text</div>
+          <textarea style="width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:14px;resize:vertical;min-height:60px;outline:none;background:var(--bg)" onchange="updateBlock(${bi},'text',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">${b.text || ''}</textarea>
+        </div>
+      </div>`;
+  } else if (b.type === 'image') {
+    inner = `<input style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;outline:none;background:var(--bg)" placeholder="Image label / description for stakeholders" value="${b.label || ''}" onchange="updateBlock(${bi},'label',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>`;
+  } else if (b.type === 'accordion') {
+    const items = (b.items || []).map((item, ii) => `
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:start;margin-bottom:8px">
+        <input style="padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;background:var(--bg)" placeholder="Question" value="${item.q || ''}" onchange="updateBlockItem(${bi},${ii},'q',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+        <textarea style="padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;resize:vertical;min-height:40px;outline:none;background:var(--bg)" placeholder="Answer" onchange="updateBlockItem(${bi},${ii},'a',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">${item.a || ''}</textarea>
+        <button class="block-tool-btn" onclick="removeItem(${bi},${ii},'items')" style="margin-top:4px">✕</button>
+      </div>`).join('');
+    inner = `${items}<button class="add-block-btn" onclick="addItem(${bi},'items',{q:'',a:''})">+ Add item</button>`;
+  } else if (b.type === 'tabs') {
+    const tabs = (b.tabs || []).map((tab, ti) => `
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:start;margin-bottom:8px">
+        <input style="padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;background:var(--bg)" placeholder="Tab label" value="${tab.label || ''}" onchange="updateBlockItem(${bi},${ti},'label',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+        <textarea style="padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;resize:vertical;min-height:40px;outline:none;background:var(--bg)" placeholder="Tab content" onchange="updateBlockItem(${bi},${ti},'content',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">${tab.content || ''}</textarea>
+        <button class="block-tool-btn" onclick="removeItem(${bi},${ti},'tabs')" style="margin-top:4px">✕</button>
+      </div>`).join('');
+    inner = `${tabs}<button class="add-block-btn" onclick="addItem(${bi},'tabs',{label:'Tab',content:''})">+ Add tab</button>`;
+  } else if (b.type === 'quiz') {
+    const opts = (b.options || []).map((o, oi) => `
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+        <input type="radio" name="correct_${bi}" ${b.correct===oi?'checked':''} onchange="updateBlock(${bi},'correct',${oi})" title="Mark as correct answer" style="accent-color:var(--accent);flex-shrink:0"/>
+        <input style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;background:var(--bg)" value="${o}" onchange="updateBlockOption(${bi},${oi},this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+        <button class="block-tool-btn" onclick="removeOption(${bi},${oi})">✕</button>
+      </div>`).join('');
+    inner = `
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:5px">Question</div>
+        <textarea style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;resize:vertical;min-height:50px;outline:none;background:var(--bg)" onchange="updateBlock(${bi},'question',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">${b.question || ''}</textarea>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Options (● = correct answer)</div>
+      ${opts}
+      <button class="add-block-btn" onclick="addOption(${bi})">+ Add option</button>
+      <div style="margin-top:12px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:5px">Correct feedback</div>
+        <input style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;background:var(--bg)" value="${b.feedbackCorrect||''}" placeholder="Well done! Explanation..." onchange="updateBlock(${bi},'feedbackCorrect',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+        <div style="font-size:11px;color:var(--text3);margin:8px 0 5px">Incorrect feedback</div>
+        <input style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;background:var(--bg)" value="${b.feedbackWrong||''}" placeholder="Not quite. Explanation..." onchange="updateBlock(${bi},'feedbackWrong',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>`;
+  } else if (b.type === 'process') {
+    const steps = (b.steps || []).map((s, si) => `
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:start;margin-bottom:8px">
+        <input style="padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;background:var(--bg)" placeholder="Step title" value="${s.title||''}" onchange="updateBlockItem(${bi},${si},'title',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+        <textarea style="padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;resize:vertical;min-height:40px;outline:none;background:var(--bg)" placeholder="Step description" onchange="updateBlockItem(${bi},${si},'desc',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">${s.desc||''}</textarea>
+        <button class="block-tool-btn" onclick="removeItem(${bi},${si},'steps')" style="margin-top:4px">✕</button>
+      </div>`).join('');
+    inner = `${steps}<button class="add-block-btn" onclick="addItem(${bi},'steps',{title:'',desc:''})">+ Add step</button>`;
+  } else if (b.type === 'timeline') {
+    const events = (b.events || []).map((e, ei) => `
+      <div style="display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:start;margin-bottom:8px">
+        <input style="width:90px;padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;background:var(--bg)" placeholder="Date" value="${e.date||''}" onchange="updateBlockItem(${bi},${ei},'date',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+        <input style="padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;background:var(--bg)" placeholder="Title" value="${e.title||''}" onchange="updateBlockItem(${bi},${ei},'title',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+        <textarea style="padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;resize:vertical;min-height:40px;outline:none;background:var(--bg)" placeholder="Description" onchange="updateBlockItem(${bi},${ei},'desc',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">${e.desc||''}</textarea>
+        <button class="block-tool-btn" onclick="removeItem(${bi},${ei},'events')" style="margin-top:4px">✕</button>
+      </div>`).join('');
+    inner = `${events}<button class="add-block-btn" onclick="addItem(${bi},'events',{date:'',title:'',desc:''})">+ Add event</button>`;
+  } else if (b.type === 'sorting') {
+    const cols = (b.columns || []).map((col, ci) => `
+      <div style="border:1px solid var(--border);border-radius:8px;padding:12px;background:var(--bg)">
+        <input style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;font-size:13px;margin-bottom:8px;outline:none;background:#fff;font-weight:500" value="${col.label||''}" placeholder="Category label" onchange="updateSortCol(${bi},${ci},'label',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+        ${(col.items||[]).map((item,ii)=>`
+          <div style="display:flex;gap:6px;margin-bottom:6px">
+            <input style="flex:1;padding:6px 9px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;background:#fff" value="${item}" onchange="updateSortItem(${bi},${ci},${ii},this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+            <button class="block-tool-btn" onclick="removeSortItem(${bi},${ci},${ii})">✕</button>
+          </div>`).join('')}
+        <button class="add-block-btn" style="font-size:12px;padding:5px 10px" onclick="addSortItem(${bi},${ci})">+ item</button>
+      </div>`).join('');
+    inner = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">${cols}</div>
+      <button class="add-block-btn" style="margin-top:10px" onclick="addSortCol(${bi})">+ Add category</button>`;
+  } else if (b.type === 'button') {
+    inner = `<div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end">
+      <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:5px">Button label</div>
+        <input style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;outline:none;background:var(--bg)" value="${b.label||'Learn more'}" onchange="updateBlock(${bi},'label',this.value)" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"/>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:5px">Style</div>
+        <select style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;outline:none;background:var(--bg)" onchange="updateBlock(${bi},'btnStyle',this.value)">
+          <option value="filled" ${b.btnStyle==='filled'?'selected':''}>Filled</option>
+          <option value="outline" ${b.btnStyle==='outline'?'selected':''}>Outline</option>
+        </select>
+      </div>
+    </div>`;
+  } else if (b.type === 'divider') {
+    inner = `<div style="text-align:center;color:var(--text3);font-size:13px">— Section divider —</div>`;
+  }
+
+  return `<div class="block-wrap" id="block-${bi}">
+    <div class="block-toolbar">
+      <span class="drag-handle" title="Drag to reorder">⠿</span>
+      <span class="block-type-badge">${b.type}</span>
+      <div class="block-tools">
+        <button class="block-tool-btn" onclick="moveBlock(${bi},-1)" title="Move up">↑</button>
+        <button class="block-tool-btn" onclick="moveBlock(${bi},1)" title="Move down">↓</button>
+        <button class="block-tool-btn" onclick="duplicateBlock(${bi})" title="Duplicate">⧉</button>
+        <button class="block-tool-btn" onclick="deleteBlock(${bi})" title="Delete" style="color:var(--error)">✕</button>
+      </div>
+    </div>
+    <div class="block-body">${inner}</div>
+  </div>`;
+}
+
+// ── BLOCK MUTATIONS ──
+function addBlock(type) {
+  const defaults = {
+    text:{type:'text',content:''},
+    callout:{type:'callout',style:'info',text:''},
+    image:{type:'image',label:''},
+    accordion:{type:'accordion',items:[{q:'',a:''},{q:'',a:''}]},
+    tabs:{type:'tabs',tabs:[{label:'Tab 1',content:''},{label:'Tab 2',content:''}]},
+    quiz:{type:'quiz',question:'',options:['','','',''],correct:0,feedbackCorrect:'Correct!',feedbackWrong:'Not quite.'},
+    process:{type:'process',steps:[{title:'',desc:''},{title:'',desc:''}]},
+    timeline:{type:'timeline',events:[{date:'',title:'',desc:''}]},
+    sorting:{type:'sorting',columns:[{label:'Category A',items:['Item 1','Item 2']},{label:'Category B',items:['Item 3','Item 4']}]},
+    button:{type:'button',label:'Learn more',btnStyle:'filled'},
+    divider:{type:'divider'}
+  };
+  state.lessons[state.currentLesson].blocks.push(JSON.parse(JSON.stringify(defaults[type])));
+  renderBuild();
+}
+function deleteBlock(bi) { state.lessons[state.currentLesson].blocks.splice(bi,1); renderBuild(); }
+function duplicateBlock(bi) {
+  const b = JSON.parse(JSON.stringify(state.lessons[state.currentLesson].blocks[bi]));
+  state.lessons[state.currentLesson].blocks.splice(bi+1,0,b); renderBuild();
+}
+function moveBlock(bi,dir) {
+  const blocks = state.lessons[state.currentLesson].blocks;
+  const ni = bi+dir;
+  if (ni<0||ni>=blocks.length) return;
+  [blocks[bi],blocks[ni]]=[blocks[ni],blocks[bi]]; renderBuild();
+}
+function updateBlock(bi,key,val) { state.lessons[state.currentLesson].blocks[bi][key]=val; }
+function updateBlockItem(bi,ii,key,val) { state.lessons[state.currentLesson].blocks[bi].items[ii][key]=val; }
+function addItem(bi,arr,def) { if(!state.lessons[state.currentLesson].blocks[bi][arr])state.lessons[state.currentLesson].blocks[bi][arr]=[]; state.lessons[state.currentLesson].blocks[bi][arr].push({...def}); renderBuild(); }
+function removeItem(bi,ii,arr) { state.lessons[state.currentLesson].blocks[bi][arr].splice(ii,1); renderBuild(); }
+function updateBlockOption(bi,oi,val) { state.lessons[state.currentLesson].blocks[bi].options[oi]=val; }
+function addOption(bi) { state.lessons[state.currentLesson].blocks[bi].options.push(''); renderBuild(); }
+function removeOption(bi,oi) { state.lessons[state.currentLesson].blocks[bi].options.splice(oi,1); renderBuild(); }
+function updateSortCol(bi,ci,key,val) { state.lessons[state.currentLesson].blocks[bi].columns[ci][key]=val; }
+function updateSortItem(bi,ci,ii,val) { state.lessons[state.currentLesson].blocks[bi].columns[ci].items[ii]=val; }
+function addSortItem(bi,ci) { state.lessons[state.currentLesson].blocks[bi].columns[ci].items.push(''); renderBuild(); }
+function removeSortItem(bi,ci,ii) { state.lessons[state.currentLesson].blocks[bi].columns[ci].items.splice(ii,1); renderBuild(); }
+function addSortCol(bi) { state.lessons[state.currentLesson].blocks[bi].columns.push({label:'Category',items:[]}); renderBuild(); }
+
+// ── AI GENERATION ──
+async function generateLesson() {
+  const lesson = state.lessons[state.currentLesson];
+  const raw = document.getElementById('rawContent').value;
+  lesson.rawContent = raw;
+  if (!raw.trim()) { showStatus('error','Paste some content first.'); return; }
+  if (!state.apiKey) { showStatus('error','Enter your API key in Setup first.'); return; }
+  const btn = document.getElementById('genBtn');
+  btn.classList.add('loading'); btn.disabled = true;
+  showStatus('loading','Generating lesson blocks…');
+  const prompt = buildPrompt(raw, lesson.selectedBlockTypes, state.courseTitle, lesson.title, state.audience);
+  try {
+    const text = await callAI(prompt);
+    const json = extractJSON(text);
+    const blocks = JSON.parse(json);
+    lesson.blocks = Array.isArray(blocks) ? blocks : blocks.blocks || [];
+    showStatus('success','Lesson generated. Review and edit below, then preview.');
+    renderBuild();
+  } catch(e) {
+    showStatus('error','Generation failed: ' + e.message + '. Try again or build manually.');
+  }
+  btn.classList.remove('loading'); btn.disabled = false;
+}
+
+function buildPrompt(raw, types, courseTitle, lessonTitle, audience) {
+  return `You are an expert instructional designer. Given raw content, generate a structured e-learning lesson as a JSON array of block objects.
+
+Course: "${courseTitle}"
+Lesson: "${lessonTitle}"
+Audience: "${audience || 'general learners'}"
+Requested block types: ${types.join(', ')}
+
+Raw content:
+${raw}
+
+Return ONLY a valid JSON array. No markdown. No explanation. Each block must match one of these schemas:
+
+{"type":"text","content":"string"}
+{"type":"callout","style":"info|warning|success|tip","text":"string"}
+{"type":"image","label":"descriptive label for stakeholders"}
+{"type":"accordion","items":[{"q":"string","a":"string"}]}
+{"type":"tabs","tabs":[{"label":"string","content":"string"}]}
+{"type":"quiz","question":"string","options":["a","b","c","d"],"correct":0,"feedbackCorrect":"string","feedbackWrong":"string"}
+{"type":"process","steps":[{"title":"string","desc":"string"}]}
+{"type":"timeline","events":[{"date":"string","title":"string","desc":"string"}]}
+{"type":"sorting","columns":[{"label":"string","items":["string"]}]}
+{"type":"button","label":"string","btnStyle":"filled|outline"}
+{"type":"divider"}
+
+Use only the requested block types. Generate 4-8 blocks. Make content rich, professional, and learning-focused.`;
+}
+
+async function callAI(prompt) {
+  const key = state.apiKey;
+  const prov = state.provider;
+  let url, headers, body, parse;
+  if (prov === 'claude') {
+    url = 'https://api.anthropic.com/v1/messages';
+    headers = {'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'};
+    body = JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]});
+    parse = r => r.content[0].text;
+  } else if (prov === 'gpt' || prov === 'copilot') {
+    url = prov === 'copilot' ? 'https://api.openai.com/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions';
+    headers = {'Content-Type':'application/json','Authorization':'Bearer '+key};
+    body = JSON.stringify({model:'gpt-4o',max_tokens:4000,messages:[{role:'user',content:prompt}]});
+    parse = r => r.choices[0].message.content;
+  } else if (prov === 'gemini') {
+    url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${key}`;
+    headers = {'Content-Type':'application/json'};
+    body = JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:4000}});
+    parse = r => r.candidates[0].content.parts[0].text;
+  }
+  const res = await fetch(url, {method:'POST',headers,body});
+  if (!res.ok) { const err = await res.json().catch(()=>{}); throw new Error((err?.error?.message)||res.statusText); }
+  const data = await res.json();
+  return parse(data);
+}
+
+function extractJSON(text) {
+  const match = text.match(/\[[\s\S]*\]/);
+  if (match) return match[0];
+  const match2 = text.match(/\{[\s\S]*\}/);
+  if (match2) return match2[0];
+  return text.trim();
+}
+
+function showStatus(type, msg) {
+  const el = document.getElementById('genStatus');
+  if (!el) return;
+  el.className = 'status-bar ' + type;
+  el.textContent = msg;
+}
+
+// ── PREVIEW ──
+let previewCurrentLesson = 0;
+
+function renderPreview() {
+  previewCurrentLesson = 0;
+  document.getElementById('previewCourseTitle').textContent = state.courseTitle;
+  document.getElementById('risePreview').innerHTML = buildRiseHTML();
+  bindPreviewEvents();
+}
+
+function buildRiseHTML() {
+  const accent = state.accentColor;
+  const dark = shadeColor(accent, -20);
+  const light = shadeColor(accent, 75);
+  const navItems = state.lessons.map((l, i) => `
+    <div class="rise-nav-item ${i===0?'active':''} ${l.blocks.length>0?'done':''}" id="navItem${i}" onclick="previewGoTo(${i})">
+      <div class="rise-nav-dot"></div>${l.title||'Lesson '+(i+1)}
+    </div>`).join('');
+
+  return `
+  <style>
+    .rise-wrap{--acc:${accent};--acc-dark:${dark};--acc-light:${light}}
+    .rise-top{background:${dark}}
+    .rise-lesson-tag{background:${accent}}
+    .rise-nav-item.active{border-left-color:${accent}!important;color:${dark}!important;background:${light}}
+    .r-tab-head.active{color:${dark};border-bottom-color:${accent}}
+    .r-quiz-opt.sel{border-color:${accent};color:${dark}}
+    .r-quiz-opt.sel .r-quiz-radio{background:${accent};border-color:${accent}}
+    .r-quiz-submit{background:${accent}}
+    .r-quiz-submit:hover{background:${dark}}
+    .rise-nav-btn.next{background:${accent}}
+    .rise-nav-btn.next:hover{background:${dark}}
+    .r-process-num{background:${accent}}
+    .r-timeline-item::before{background:${accent}}
+    .r-timeline-date{color:${accent}}
+    .r-sort-col-head{background:${accent}}
+    .r-btn{background:${accent}}
+    .r-btn:hover{background:${dark}}
+    .r-btn.outline{background:transparent;border:2px solid ${accent};color:${dark}}
+    .rise-prog-fill{background:${accent}}
+  </style>
+  <div class="rise-wrap">
+    <div class="rise-top">
+      <div style="display:flex;align-items:center;gap:0">
+        <span style="font-family:Fraunces,serif;font-size:16px;color:rgba(255,255,255,0.9)">CourseFrame</span>
+        <span class="rise-course-name">${state.courseTitle}</span>
+      </div>
+      <div class="rise-prog-wrap">
+        <div class="rise-prog-bar"><div class="rise-prog-fill" id="progFill" style="width:${Math.round(100/state.lessons.length)}%"></div></div>
+        <span class="rise-prog-label" id="progLabel">1 / ${state.lessons.length}</span>
+      </div>
+    </div>
+    <div class="rise-body">
+      <div class="rise-nav">
+        <div class="rise-nav-section">
+          <div class="rise-nav-label">Lessons</div>
+          ${navItems}
+        </div>
+      </div>
+      <div class="rise-content" id="riseContentArea"></div>
+    </div>
+  </div>`;
+}
+
+function bindPreviewEvents() {
+  renderLessonContent(0);
+}
+
+function previewGoTo(i) {
+  previewCurrentLesson = i;
+  document.querySelectorAll('.rise-nav-item').forEach((el,idx) => el.classList.toggle('active', idx===i));
+  const pct = Math.round(((i+1)/state.lessons.length)*100);
+  const fill = document.getElementById('progFill');
+  const label = document.getElementById('progLabel');
+  if (fill) fill.style.width = pct + '%';
+  if (label) label.textContent = (i+1) + ' / ' + state.lessons.length;
+  renderLessonContent(i);
+}
+
+function renderLessonContent(idx) {
+  const lesson = state.lessons[idx];
+  const area = document.getElementById('riseContentArea');
+  if (!area) return;
+  let html = `
+    <div class="rise-lesson-tag">${'Lesson '+(idx+1)}</div>
+    <div class="rise-lesson-title" contenteditable="true" onblur="updateLessonTitle(${idx},this.textContent)">${lesson.title||'Lesson '+(idx+1)}</div>
+    <div class="rise-lesson-meta">Click any text to edit inline</div>
+    <div class="edit-note" style="font-size:11px;color:#8a6000;background:#fdf6e3;padding:6px 12px;border-radius:6px;margin-bottom:20px">✏ Prototype editing mode — click any text to edit directly</div>`;
+
+  lesson.blocks.forEach((b, bi) => { html += renderRiseBlock(b, idx, bi); });
+
+  html += `<div class="rise-nav-footer">
+    <button class="rise-nav-btn" onclick="previewGoTo(${idx-1})" ${idx===0?'disabled':''}>← Previous</button>
+    <button class="rise-nav-btn next" onclick="previewGoTo(${idx+1})" ${idx===state.lessons.length-1?'disabled':''}>Next →</button>
+  </div>`;
+
+  area.innerHTML = html;
+}
+
+function updateLessonTitle(idx, val) { state.lessons[idx].title = val; renderLessonNav(); }
+
+function renderRiseBlock(b, li, bi) {
+  const uid = 'b'+li+'_'+bi;
+  if (b.type==='text') {
+    return `<div class="rise-block r-text" contenteditable="true" onblur="updateBlockContent(${li},${bi},'content',this.textContent)">${b.content||'Click to add text...'}</div>`;
+  }
+  if (b.type==='callout') {
+    const styles = {info:{bg:'#e8f4fd',border:'#3B82F6',icon:'ℹ',tc:'#1e40af'},warning:{bg:'#fef9c3',border:'#F59E0B',icon:'⚠',tc:'#92400e'},success:{bg:'#ecfdf5',border:'#10B981',icon:'✓',tc:'#065f46'},tip:{bg:'#f5f3ff',border:state.accentColor,icon:'★',tc:shadeColor(state.accentColor,-30)}};
+    const s = styles[b.style]||styles.info;
+    return `<div class="rise-block r-callout" style="background:${s.bg};border-left-color:${s.border}">
+      <div class="r-callout-icon">${s.icon}</div>
+      <div class="r-callout-text" style="color:${s.tc}" contenteditable="true" onblur="updateBlockContent(${li},${bi},'text',this.textContent)">${b.text||'Callout text...'}</div>
+    </div>`;
+  }
+  if (b.type==='image') {
+    return `<div class="rise-block">
+      <div class="r-image" style="background:${shadeColor(state.accentColor,70)};border-color:${shadeColor(state.accentColor,30)};color:${shadeColor(state.accentColor,-20)}">
+        [ Image placeholder: <span contenteditable="true" onblur="updateBlockContent(${li},${bi},'label',this.textContent)">${b.label||'Describe the image here'}</span> ]
+      </div>
+    </div>`;
+  }
+  if (b.type==='accordion') {
+    const items = (b.items||[]).map((item,ii)=>`
+      <div class="r-acc-item">
+        <div class="r-acc-trigger" onclick="toggleAcc(this)">
+          <span contenteditable="true" onclick="event.stopPropagation()">${item.q||'Question'}</span>
+          <span class="r-acc-arrow">▼</span>
+        </div>
+        <div class="r-acc-body">${item.a||'Answer'}</div>
+      </div>`).join('');
+    return `<div class="rise-block"><div class="r-accordion">${items}</div></div>`;
+  }
+  if (b.type==='tabs') {
+    const heads = (b.tabs||[]).map((t,ti)=>`<div class="r-tab-head ${ti===0?'active':''}" onclick="switchRiseTab(this,${ti},'tabs${uid}')">${t.label||'Tab'}</div>`).join('');
+    const panes = (b.tabs||[]).map((t,ti)=>`<div class="r-tab-pane ${ti===0?'active':''}" data-group="tabs${uid}">${t.content||''}</div>`).join('');
+    return `<div class="rise-block"><div class="r-tabs-heads">${heads}</div>${panes}</div>`;
+  }
+  if (b.type==='quiz') {
+    const opts = (b.options||[]).map((o,oi)=>`
+      <div class="r-quiz-opt" id="${uid}opt${oi}" onclick="selectQuizOpt('${uid}',${oi},${b.correct},'${escJs(b.feedbackCorrect||'Correct!')}','${escJs(b.feedbackWrong||'Not quite.')}')">
+        <div class="r-quiz-radio"></div>${o}
+      </div>`).join('');
+    return `<div class="rise-block r-quiz">
+      <div class="r-quiz-q" contenteditable="true">${b.question||'Question'}</div>
+      <div class="r-quiz-opts">${opts}</div>
+      <button class="r-quiz-submit" id="${uid}submit" disabled onclick="submitQuiz('${uid}',${b.correct},'${escJs(b.feedbackCorrect||'Correct!')}','${escJs(b.feedbackWrong||'Not quite.')}')">Submit answer</button>
+      <div class="r-quiz-fb" id="${uid}fb"></div>
+    </div>`;
+  }
+  if (b.type==='process') {
+    const steps = (b.steps||[]).map((s,si)=>`
+      <div class="r-process-step">
+        <div class="r-process-num">${si+1}</div>
+        <div class="r-process-content">
+          <div class="r-process-title" contenteditable="true">${s.title||'Step title'}</div>
+          <div class="r-process-desc" contenteditable="true">${s.desc||'Step description'}</div>
+        </div>
+      </div>`).join('');
+    return `<div class="rise-block r-process">${steps}</div>`;
+  }
+  if (b.type==='timeline') {
+    const events = (b.events||[]).map(e=>`
+      <div class="r-timeline-item">
+        <div class="r-timeline-date" contenteditable="true">${e.date||'Date'}</div>
+        <div class="r-timeline-title" contenteditable="true">${e.title||'Event'}</div>
+        <div class="r-timeline-desc" contenteditable="true">${e.desc||''}</div>
+      </div>`).join('');
+    return `<div class="rise-block r-timeline">${events}</div>`;
+  }
+  if (b.type==='sorting') {
+    const cols = (b.columns||[]).map(col=>`
+      <div class="r-sort-col">
+        <div class="r-sort-col-head">${col.label||'Category'}</div>
+        <div class="r-sort-items">
+          ${(col.items||[]).map(item=>`<div class="r-sort-item" draggable="true">${item}</div>`).join('')}
+        </div>
+      </div>`).join('');
+    return `<div class="rise-block"><div class="r-sort-wrap">${cols}</div></div>`;
+  }
+  if (b.type==='button') {
+    const cls = b.btnStyle==='outline' ? 'r-btn outline' : 'r-btn';
+    return `<div class="rise-block r-btn-block"><button class="${cls}" contenteditable="true">${b.label||'Button'}</button></div>`;
+  }
+  if (b.type==='divider') {
+    return `<div class="rise-block"><hr class="r-divider"/></div>`;
+  }
+  return '';
+}
+
+function updateBlockContent(li,bi,key,val) { state.lessons[li].blocks[bi][key]=val; }
+function escJs(s) { return (s||'').replace(/'/g,"\\'").replace(/\n/g,' '); }
+
+// ── RISE INTERACTIONS ──
+function toggleAcc(trigger) {
+  const body = trigger.nextElementSibling;
+  const open = trigger.classList.contains('open');
+  trigger.closest('.r-accordion').querySelectorAll('.r-acc-trigger').forEach(t=>{t.classList.remove('open');t.nextElementSibling.classList.remove('open');});
+  if (!open) { trigger.classList.add('open'); body.classList.add('open'); }
+}
+function switchRiseTab(el, idx, group) {
+  const wrap = el.closest('.rise-block');
+  wrap.querySelectorAll('.r-tab-head').forEach(h=>h.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll(`[data-group="${group}"]`).forEach((p,i)=>p.classList.toggle('active',i===idx));
+}
+let quizSelected = {};
+function selectQuizOpt(uid, oi, correct, fbC, fbW) {
+  if (quizSelected[uid+'done']) return;
+  quizSelected[uid] = oi;
+  document.querySelectorAll(`[id^="${uid}opt"]`).forEach(el=>el.classList.remove('sel'));
+  document.getElementById(uid+'opt'+oi).classList.add('sel');
+  document.getElementById(uid+'submit').disabled = false;
+}
+function submitQuiz(uid, correct, fbC, fbW) {
+  if (quizSelected[uid+'done']) return;
+  quizSelected[uid+'done'] = true;
+  document.getElementById(uid+'submit').disabled = true;
+  const sel = quizSelected[uid];
+  document.querySelectorAll(`[id^="${uid}opt"]`).forEach((el,i)=>{
+    if (i===correct) el.classList.add('correct');
+    else if (i===sel && sel!==correct) el.classList.add('wrong');
+  });
+  const fb = document.getElementById(uid+'fb');
+  const ok = sel===correct;
+  fb.className = 'r-quiz-fb ' + (ok?'show-correct':'show-wrong');
+  fb.textContent = ok ? fbC : fbW;
+}
+
+// ── DEVICE ──
+function setDevice(d, btn) {
+  document.querySelectorAll('.dev-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const frame = document.getElementById('previewFrame');
+  const widths = {desktop:'100%',tablet:'768px',mobile:'375px'};
+  frame.style.width = widths[d];
+  frame.style.maxWidth = widths[d] === '100%' ? '1100px' : widths[d];
+}
+
+// ── EXPORT ──
+function exportHTML() {
+  const accent = state.accentColor;
+  const dark = shadeColor(accent,-20);
+  const light = shadeColor(accent,75);
+  const interactiveScript = `
+<script>
+function toggleAcc(t){var b=t.nextElementSibling,o=t.classList.contains('open');t.closest('.r-accordion').querySelectorAll('.r-acc-trigger').forEach(function(x){x.classList.remove('open');x.nextElementSibling.classList.remove('open');});if(!o){t.classList.add('open');b.classList.add('open');}}
+function switchTab(el,idx,group){el.closest('.r-tabs-heads').querySelectorAll('.r-tab-head').forEach(function(h){h.classList.remove('active');});el.classList.add('active');document.querySelectorAll('[data-group="'+group+'"]').forEach(function(p,i){p.classList.toggle('active',i===idx);});}
+var qSel={};
+function selectOpt(uid,oi){if(qSel[uid+'d'])return;qSel[uid]=oi;document.querySelectorAll('[id^="'+uid+'opt"]').forEach(function(el){el.classList.remove('sel');});document.getElementById(uid+'opt'+oi).classList.add('sel');document.getElementById(uid+'sub').disabled=false;}
+function submitQ(uid,correct,fbC,fbW){if(qSel[uid+'d'])return;qSel[uid+'d']=true;document.getElementById(uid+'sub').disabled=true;var s=qSel[uid];document.querySelectorAll('[id^="'+uid+'opt"]').forEach(function(el,i){if(i===correct)el.classList.add('correct');else if(i===s&&s!==correct)el.classList.add('wrong');});var fb=document.getElementById(uid+'fb');var ok=s===correct;fb.className='r-quiz-fb '+(ok?'show-correct':'show-wrong');fb.textContent=ok?fbC:fbW;}
+var cur=0;
+function goTo(i){cur=i;var lessons=document.querySelectorAll('.lesson-section');lessons.forEach(function(l,idx){l.style.display=idx===i?'block':'none';});document.querySelectorAll('.rise-nav-item').forEach(function(el,idx){el.classList.toggle('active',idx===i);});var pct=Math.round(((i+1)/lessons.length)*100);var pf=document.getElementById('progFill');var pl=document.getElementById('progLabel');if(pf)pf.style.width=pct+'%';if(pl)pl.textContent=(i+1)+' / '+lessons.length;}
+<\/script>`;
+
+  let lessonsHTML = state.lessons.map((lesson,li)=>{
+    let content = `<div class="rise-lesson-tag">Lesson ${li+1}</div>
+      <div class="rise-lesson-title">${lesson.title||'Lesson '+(li+1)}</div>
+      <div class="rise-lesson-meta">&nbsp;</div>`;
+    lesson.blocks.forEach((b,bi)=>{
+      const uid='x'+li+'_'+bi;
+      if(b.type==='text') content+=`<div class="rise-block r-text">${b.content||''}</div>`;
+      else if(b.type==='callout'){const styles={info:{bg:'#e8f4fd',border:'#3B82F6',icon:'ℹ',tc:'#1e40af'},warning:{bg:'#fef9c3',border:'#F59E0B',icon:'⚠',tc:'#92400e'},success:{bg:'#ecfdf5',border:'#10B981',icon:'✓',tc:'#065f46'},tip:{bg:light,border:accent,icon:'★',tc:dark}};const s=styles[b.style]||styles.info;content+=`<div class="rise-block r-callout" style="background:${s.bg};border-left-color:${s.border}"><div class="r-callout-icon">${s.icon}</div><div class="r-callout-text" style="color:${s.tc}">${b.text||''}</div></div>`;}
+      else if(b.type==='image') content+=`<div class="rise-block"><div class="r-image" style="background:${light};border-color:${shadeColor(accent,30)};color:${dark}">[ Image placeholder: ${b.label||''} ]</div></div>`;
+      else if(b.type==='accordion'){let items=(b.items||[]).map((item,ii)=>`<div class="r-acc-item"><div class="r-acc-trigger" onclick="toggleAcc(this)">${item.q||''}<span class="r-acc-arrow">▼</span></div><div class="r-acc-body">${item.a||''}</div></div>`).join('');content+=`<div class="rise-block"><div class="r-accordion">${items}</div></div>`;}
+      else if(b.type==='tabs'){let heads=(b.tabs||[]).map((t,ti)=>`<div class="r-tab-head ${ti===0?'active':''}" onclick="switchTab(this,${ti},'t${uid}')">${t.label||'Tab'}</div>`).join('');let panes=(b.tabs||[]).map((t,ti)=>`<div class="r-tab-pane ${ti===0?'active':''}" data-group="t${uid}">${t.content||''}</div>`).join('');content+=`<div class="rise-block"><div class="r-tabs-heads">${heads}</div>${panes}</div>`;}
+      else if(b.type==='quiz'){let opts=(b.options||[]).map((o,oi)=>`<div class="r-quiz-opt" id="${uid}opt${oi}" onclick="selectOpt('${uid}',${oi})"><div class="r-quiz-radio"></div>${o}</div>`).join('');content+=`<div class="rise-block r-quiz"><div class="r-quiz-q">${b.question||''}</div><div class="r-quiz-opts">${opts}</div><button class="r-quiz-submit" id="${uid}sub" disabled onclick="submitQ('${uid}',${b.correct},'${escJs(b.feedbackCorrect||'Correct!')}','${escJs(b.feedbackWrong||'Not quite.')}')">Submit</button><div class="r-quiz-fb" id="${uid}fb"></div></div>`;}
+      else if(b.type==='process'){let steps=(b.steps||[]).map((s,si)=>`<div class="r-process-step"><div class="r-process-num">${si+1}</div><div class="r-process-content"><div class="r-process-title">${s.title||''}</div><div class="r-process-desc">${s.desc||''}</div></div></div>`).join('');content+=`<div class="rise-block r-process">${steps}</div>`;}
+      else if(b.type==='timeline'){let evs=(b.events||[]).map(e=>`<div class="r-timeline-item"><div class="r-timeline-date">${e.date||''}</div><div class="r-timeline-title">${e.title||''}</div><div class="r-timeline-desc">${e.desc||''}</div></div>`).join('');content+=`<div class="rise-block r-timeline">${evs}</div>`;}
+      else if(b.type==='sorting'){let cols=(b.columns||[]).map(col=>`<div class="r-sort-col"><div class="r-sort-col-head">${col.label||''}</div><div class="r-sort-items">${(col.items||[]).map(item=>`<div class="r-sort-item">${item}</div>`).join('')}</div></div>`).join('');content+=`<div class="rise-block"><div class="r-sort-wrap">${cols}</div></div>`;}
+      else if(b.type==='button'){const cls=b.btnStyle==='outline'?'r-btn outline':'r-btn';content+=`<div class="rise-block r-btn-block"><button class="${cls}">${b.label||'Button'}</button></div>`;}
+      else if(b.type==='divider') content+=`<div class="rise-block"><hr class="r-divider"/></div>`;
+    });
+    content+=`<div class="rise-nav-footer"><button class="rise-nav-btn" onclick="goTo(${li-1})" ${li===0?'disabled':''}>← Previous</button><button class="rise-nav-btn next" onclick="goTo(${li+1})" ${li===state.lessons.length-1?'disabled':''}>Next →</button></div>`;
+    return `<div class="lesson-section" style="display:${li===0?'block':'none'}">${content}</div>`;
+  }).join('');
+
+  const navItems = state.lessons.map((l,i)=>`<div class="rise-nav-item ${i===0?'active':''}" onclick="goTo(${i})"><div class="rise-nav-dot"></div>${l.title||'Lesson '+(i+1)}</div>`).join('');
+
+  const fullHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${state.courseTitle}</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#faf8f6;color:#1a1410;min-height:100vh}
+.rise-wrap{display:flex;flex-direction:column;min-height:100vh}
+.rise-top{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;color:#fff;background:${dark};position:sticky;top:0;z-index:100}
+.rise-top-left{display:flex;align-items:center;gap:0;font-family:'Fraunces',serif;font-size:16px;color:rgba(255,255,255,0.9)}
+.rise-course-name{font-size:13px;opacity:0.7;border-left:1px solid rgba(255,255,255,0.2);padding-left:12px;margin-left:8px;font-family:'DM Sans',sans-serif}
+.rise-prog-wrap{display:flex;align-items:center;gap:10px}
+.rise-prog-bar{width:110px;height:3px;background:rgba(255,255,255,0.2);border-radius:2px;overflow:hidden}
+.rise-prog-fill{height:100%;background:${accent};border-radius:2px;transition:width 0.4s}
+.rise-prog-label{font-size:11px;opacity:0.6}
+.rise-body{display:flex;flex:1}
+.rise-nav{width:230px;border-right:1px solid rgba(0,0,0,0.08);overflow-y:auto;flex-shrink:0;background:#fff}
+.rise-nav-section{padding:16px 0}
+.rise-nav-label{font-size:10px;font-weight:500;letter-spacing:0.08em;color:#9a8070;padding:0 14px 8px;text-transform:uppercase}
+.rise-nav-item{display:flex;align-items:center;gap:9px;padding:9px 14px;cursor:pointer;border-left:3px solid transparent;transition:all 0.15s;font-size:13px;color:#5a4a3f}
+.rise-nav-item:hover{background:#f5efe9}
+.rise-nav-item.active{border-left-color:${accent};background:${light};color:${dark};font-weight:500}
+.rise-nav-dot{width:7px;height:7px;border-radius:50%;background:#ddd5cc;flex-shrink:0}
+.rise-content{flex:1;padding:36px 40px;overflow-y:auto;max-width:760px}
+.rise-lesson-tag{display:inline-block;font-size:11px;font-weight:500;padding:3px 12px;border-radius:20px;margin-bottom:10px;color:#fff;background:${accent}}
+.rise-lesson-title{font-family:'Fraunces',serif;font-size:30px;margin-bottom:6px;color:#1a1410;font-weight:400}
+.rise-lesson-meta{font-size:13px;color:#9a8070;margin-bottom:28px}
+.rise-block{margin-bottom:22px}
+.r-text{font-size:15px;color:#3a2a20;line-height:1.78}
+.r-callout{display:flex;gap:14px;padding:16px 18px;border-radius:10px;border-left:3px solid}
+.r-callout-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.r-callout-text{font-size:14px;line-height:1.65}
+.r-image{border-radius:10px;display:flex;align-items:center;justify-content:center;min-height:180px;font-size:13px;font-weight:500;border:1.5px dashed}
+.r-accordion{border:1px solid #ddd5cc;border-radius:10px;overflow:hidden}
+.r-acc-item{border-bottom:1px solid #ddd5cc}
+.r-acc-item:last-child{border-bottom:none}
+.r-acc-trigger{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;cursor:pointer;background:#fff;font-size:14px;font-weight:500;color:#1a1410;transition:background 0.12s}
+.r-acc-trigger:hover{background:#faf8f6}
+.r-acc-arrow{font-size:11px;color:#9a8070;transition:transform 0.2s;flex-shrink:0;margin-left:8px}
+.r-acc-trigger.open .r-acc-arrow{transform:rotate(180deg)}
+.r-acc-body{display:none;padding:13px 17px;font-size:14px;color:#5a4a3f;line-height:1.7;background:#faf8f6}
+.r-acc-body.open{display:block}
+.r-tabs-heads{display:flex;border-bottom:1px solid #ddd5cc}
+.r-tab-head{padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;color:#9a8070;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s}
+.r-tab-head.active{color:${dark};border-bottom-color:${accent}}
+.r-tab-pane{display:none;padding:16px;background:#faf8f6;border-radius:0 0 10px 10px;border:1px solid #ddd5cc;border-top:none;font-size:14px;color:#5a4a3f;line-height:1.7}
+.r-tab-pane.active{display:block}
+.r-quiz{background:#fff;border:1px solid #ddd5cc;border-radius:10px;padding:20px}
+.r-quiz-q{font-size:15px;font-weight:500;color:#1a1410;margin-bottom:16px}
+.r-quiz-opts{display:flex;flex-direction:column;gap:10px}
+.r-quiz-opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:8px;border:1px solid #ddd5cc;cursor:pointer;font-size:14px;color:#5a4a3f;transition:all 0.15s;background:#faf8f6}
+.r-quiz-opt:hover{border-color:${shadeColor(accent,20)}}
+.r-quiz-opt.sel{border-color:${accent};background:${light};color:${dark};font-weight:500}
+.r-quiz-opt.correct{border-color:#2d7a4f;background:#edf7f1;color:#1a5c36}
+.r-quiz-opt.wrong{border-color:#c0392b;background:#fdf0ee;color:#9b2218}
+.r-quiz-radio{width:16px;height:16px;border-radius:50%;border:1.5px solid #c8bdb4;flex-shrink:0;transition:all 0.15s}
+.r-quiz-opt.sel .r-quiz-radio{background:${accent};border-color:${accent}}
+.r-quiz-opt.correct .r-quiz-radio{background:#2d7a4f;border-color:#2d7a4f}
+.r-quiz-opt.wrong .r-quiz-radio{background:#c0392b;border-color:#c0392b}
+.r-quiz-submit{margin-top:14px;padding:9px 22px;border-radius:8px;border:none;font-size:13px;font-weight:500;cursor:pointer;color:#fff;background:${accent};transition:background 0.15s;font-family:'DM Sans',sans-serif}
+.r-quiz-submit:hover{background:${dark}}
+.r-quiz-submit:disabled{opacity:0.4;cursor:not-allowed}
+.r-quiz-fb{margin-top:12px;padding:12px 14px;border-radius:8px;font-size:13px;display:none}
+.r-quiz-fb.show-correct{display:block;background:#edf7f1;color:#1a5c36;border:1px solid #bbf7d0}
+.r-quiz-fb.show-wrong{display:block;background:#fdf0ee;color:#9b2218;border:1px solid #fecaca}
+.r-process{display:flex;flex-direction:column;gap:0}
+.r-process-step{display:flex;gap:16px;position:relative}
+.r-process-step:not(:last-child)::after{content:'';position:absolute;left:19px;top:42px;width:2px;bottom:-16px;background:#ddd5cc}
+.r-process-num{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;color:#fff;flex-shrink:0;background:${accent};z-index:1;font-family:'DM Sans',sans-serif}
+.r-process-content{padding-bottom:24px;flex:1}
+.r-process-title{font-size:14px;font-weight:500;color:#1a1410;margin-bottom:4px}
+.r-process-desc{font-size:13px;color:#5a4a3f;line-height:1.65}
+.r-timeline{position:relative;padding-left:28px}
+.r-timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:#ddd5cc}
+.r-timeline-item{position:relative;margin-bottom:24px}
+.r-timeline-item::before{content:'';position:absolute;left:-24px;top:6px;width:12px;height:12px;border-radius:50%;background:${accent};border:2px solid #fff;z-index:1}
+.r-timeline-date{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:${accent};margin-bottom:4px}
+.r-timeline-title{font-size:14px;font-weight:500;color:#1a1410;margin-bottom:3px}
+.r-timeline-desc{font-size:13px;color:#5a4a3f;line-height:1.6}
+.r-sort-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.r-sort-col{border:1px solid #ddd5cc;border-radius:10px;overflow:hidden}
+.r-sort-col-head{padding:10px 14px;font-size:13px;font-weight:500;color:#fff;background:${accent}}
+.r-sort-items{padding:10px;min-height:80px;display:flex;flex-direction:column;gap:6px}
+.r-sort-item{padding:8px 12px;background:#fff;border:1px solid #ddd5cc;border-radius:7px;font-size:13px;color:#3a2a20}
+.r-btn-block{display:flex;gap:10px;flex-wrap:wrap}
+.r-btn{padding:11px 28px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;color:#fff;background:${accent};font-family:'DM Sans',sans-serif;transition:background 0.15s}
+.r-btn:hover{background:${dark}}
+.r-btn.outline{background:transparent;border:2px solid ${accent};color:${dark}}
+.r-divider{border:none;border-top:1px solid #ddd5cc;margin:8px 0}
+.rise-nav-footer{display:flex;align-items:center;justify-content:space-between;padding:20px 0 0;border-top:1px solid #ddd5cc;margin-top:12px}
+.rise-nav-btn{padding:9px 20px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #ddd5cc;background:#fff;color:#1a1410;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+.rise-nav-btn:hover{background:#faf8f6}
+.rise-nav-btn.next{color:#fff;border:none;background:${accent}}
+.rise-nav-btn.next:hover{background:${dark}}
+.rise-nav-btn:disabled{opacity:0.35;cursor:not-allowed}
+@media(max-width:600px){.rise-nav{width:160px}.rise-content{padding:24px 20px}.r-sort-wrap{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="rise-wrap">
+  <div class="rise-top">
+    <div class="rise-top-left">CourseFrame<span class="rise-course-name">${state.courseTitle}</span></div>
+    <div class="rise-prog-wrap">
+      <div class="rise-prog-bar"><div class="rise-prog-fill" id="progFill" style="width:${Math.round(100/state.lessons.length)}%"></div></div>
+      <span class="rise-prog-label" id="progLabel">1 / ${state.lessons.length}</span>
+    </div>
+  </div>
+  <div class="rise-body">
+    <div class="rise-nav">
+      <div class="rise-nav-section">
+        <div class="rise-nav-label">Lessons</div>
+        ${navItems}
+      </div>
+    </div>
+    <div class="rise-content">${lessonsHTML}</div>
+  </div>
+</div>
+${interactiveScript}
+</body>
+</html>`;
+
+  const blob = new Blob([fullHTML], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (state.courseTitle||'course').replace(/\s+/g,'-').toLowerCase()+'-prototype.html';
+  a.click();
+  showToast('Prototype downloaded!');
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
